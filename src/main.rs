@@ -13,6 +13,6 @@ fn main() {
     // println!("Binary hash: {:?}", hash);
 
     let mut port = serialport::new("/dev/tty.usbmodem3101", 115_200).open().expect("Failed to open port");
-    let output = "r1,r18\n\n".as_bytes();
+    let output = "r0,r1,r2,r3,r4\r\n".as_bytes();
     port.write(output).expect("Write failed!");
 }
