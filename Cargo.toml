@@ -7,4 +7,7 @@ edition = "2021"
 
 [dependencies]
 sha2 = "0.10"
+md4 = "0.10"
+tiger = "0.2"
 serialport = "*"
+clap = { version = "4.0", features = ["derive"] }
