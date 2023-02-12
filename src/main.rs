@@ -40,10 +40,11 @@ fn main() {
     let board_size = 32;
     let mut serial_string = String::with_capacity(128);
 
-    for offset in 0..3 {
+    for salt in 0..3 {
         let mut hasher = DefaultHasher::default();
         hasher.write(hashstring.as_bytes());
-        let value = (hasher.finish() + offset) % board_size;
+        hasher.write(&[salt]);
+        let value = hasher.finish() % board_size;
 
         serial_string.push_str(color.as_str());
         serial_string.push_str(&value.to_string());
