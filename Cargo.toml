@@ -6,9 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sha2 = "0.10"
-md4 = "0.10"
-tiger = "0.2"
 serialport = "*"
 clap = { version = "4.0", features = ["derive"] }
-digest = "*"
