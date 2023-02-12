@@ -60,7 +60,5 @@ fn main() {
     // lazy get rid of trailing comma
     serial_string.pop();
     serial_string.push_str("\r\n");
-
-    println!("{}", serial_string);
     execute_port(args.serialport, serial_string)
 }
