@@ -25,6 +25,7 @@ struct Args {
    command: String,
 }
 
+
 fn main() {
     //     fn execute_port() {
 //     let mut port = serialport::new("/dev/tty.usbmodem3101", 115_200).open().expect("Failed to open port");
@@ -33,20 +34,28 @@ fn main() {
 //     port.write(output).expect("Write failed!");
 //     drop(port)
 //     }
-//
+
     let args = Args::parse();
-
     let hashstring = args.directory + " " + &args.command;
-    println!("{}", hashstring);
+    let color = args.tint;
+    let board_size = 32;
 
-    println!("{}", args.serialport);
-    println!("{}", args.tint);
-    println!("{}", args.command);
+    // can this be consolidated ??
+    let sha2hasher = Sha256::new().chain_update(&hashstring).finalize();
+    let md4hasher = Md4::new().chain_update(&hashstring).finalize();
+    let tigerhasher = Tiger::new().chain_update(&hashstring).finalize();
 
-    let sha2hash = Sha256::new().chain_update(hashstring.clone()).finalize();
-    let md5hash = Md4::new().chain_update(hashstring.clone()).finalize();
-    let tigerhash = Tiger::new().chain_update(hashstring.clone()).finalize();
-    println!("Binary hash: {:?}", sha2hash);
-    println!("Binary hash: {:?}", md5hash);
-    println!("Binary hash: {:?}", tigerhash);
+    let sha2mod = sha2hasher.get(&sha2hasher.len()-1).expect("number should be an int between 0 and 255") % &board_size;
+    let md4mod = md4hasher.get(&md4hasher.len()-1).expect("number should be an int between 0 and 255") % &board_size;
+    let tigermod = tigerhasher.get(&tigerhasher.len()-1).expect("number should be an int between 0 and 255") % &board_size;
+
+    let bit_vector = vec![sha2mod, md4mod, tigermod];
+    let mut serial_string = String::from("");
+
+    for value in &bit_vector {
+        serial_string.push_str(&color.as_str());
+        serial_string.push_str(&value.to_string());
+    }
+
+    println!("{}", serial_string);
 }
