@@ -1,7 +1,7 @@
 use sha2::{Sha256, Digest};
 use md4::Md4;
 use tiger::Tiger;
-// use serialport;
+use serialport;
 use clap::Parser;
 
 /// Program to determine LEDs to light up
@@ -27,13 +27,12 @@ struct Args {
 
 
 fn main() {
-    //     fn execute_port() {
-//     let mut port = serialport::new("/dev/tty.usbmodem3101", 115_200).open().expect("Failed to open port");
-//     port.set_timeout(Duration::new(2,0)).expect("setting timeout failed!");
-//     let output = "r0,r1,r2,r3,r4\r\n".as_bytes();
-//     port.write(output).expect("Write failed!");
-//     drop(port)
-//     }
+    fn execute_port(port_address: String, serial_string: String) -> () {
+    let mut port = serialport::new(port_address, 115_200).open().expect("Failed to open port");
+    let output = serial_string.as_bytes();
+    port.write(output).expect("Write failed!");
+    drop(port);
+    }
 
     let args = Args::parse();
     let hashstring = args.directory + " " + &args.command;
@@ -55,7 +54,13 @@ fn main() {
     for value in &bit_vector {
         serial_string.push_str(&color.as_str());
         serial_string.push_str(&value.to_string());
+        serial_string.push_str(",");
     }
 
+    serial_string.pop();
+
+    serial_string.push_str("\r\n");
+
     println!("{}", serial_string);
+    execute_port(args.serialport, serial_string)
 }
