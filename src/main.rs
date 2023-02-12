@@ -29,6 +29,7 @@ fn main() {
     let board_size = 32;
     let mut serial_string = String::with_capacity(128);
 
+    // just turn the input into a number by summing the character bytes as integers
     let hashsum: u64 = hashstring.as_bytes().iter().map(|b| *b as u64).sum();
 
     for offset in 0..3 {

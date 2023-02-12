@@ -1,17 +1,13 @@
-use serialport::{self, SerialPort};
-
 pub use util::yhash;
 
 pub fn execute_port(port_address: &str, serial_string: &str) {
-    let mut port: Box<dyn SerialPort>;
+    let output = serial_string.as_bytes();
     loop {
-        if let Ok(p) = serialport::new(port_address, 115_200).open() {
-            port = p;
+        if let Ok(mut port) = serialport::new(port_address, 115_200).open() {
+            port.write_all(output).expect("Write failed!");
             break;
         }
     }
-    let output = serial_string.as_bytes();
-    port.write_all(output).expect("Write failed!");
 }
 
 mod util {
