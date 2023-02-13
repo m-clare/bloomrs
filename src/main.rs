@@ -1,9 +1,6 @@
 use clap::Parser;
-use md4::Md4;
-use serialport::{self, SerialPort};
-use sha2::Sha256;
-use tiger::Tiger;
-use digest::Digest;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::Hasher;
 
 /// Program to determine LEDs to light up
 #[derive(Parser, Debug)]
@@ -26,39 +23,37 @@ struct Args {
     command: String,
 }
 
-fn main() {
-    fn execute_port(port_address: String, serial_string: String) -> () {
-        let mut port : Box<dyn SerialPort>;
-        loop {
-            if let Ok(p) = serialport::new(&port_address, 115_200).open() {
-                port = p;
-                break;
-            }
+fn execute_port(port_address: &str, serial_string: &str) {
+    let output = serial_string.as_bytes();
+    loop {
+        if let Ok(mut port) = serialport::new(port_address, 115_200).open() {
+            port.write_all(output).expect("Write failed!");
+            break;
         }
-        let output = serial_string.as_bytes();
-        port.write(output).expect("Write failed!");
-        drop(port);
     }
+}
 
+fn main() {
     let args = Args::parse();
     let hashstring = args.directory + " " + &args.command;
     let color = args.tint;
     let board_size = 32;
-    let mut serial_string = String::from("");
+    let mut serial_string = String::with_capacity(128);
 
-    for byte in [
-        Sha256::new().chain_update(&hashstring).finalize().last().unwrap(),
-        Md4::new().chain_update(&hashstring).finalize().last().unwrap(),
-        Tiger::new().chain_update(&hashstring).finalize().last().unwrap(),
-    ] {
-        let value = byte % &board_size;
-        serial_string.push_str(&color.as_str());
+    for salt in 0..3 {
+        let mut hasher = DefaultHasher::default();
+        hasher.write(hashstring.as_bytes());
+        hasher.write(&[salt]);
+        let value = hasher.finish() % board_size;
+
+        serial_string.push_str(color.as_str());
         serial_string.push_str(&value.to_string());
-        serial_string.push_str(",");
+        serial_string.push(',');
     }
 
     // lazy get rid of trailing comma
     serial_string.pop();
     serial_string.push_str("\r\n");
-    execute_port(args.serialport, serial_string)
+
+    execute_port(&args.serialport, &serial_string)
 }
